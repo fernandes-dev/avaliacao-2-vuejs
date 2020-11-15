@@ -1,45 +1,56 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary">
+    <v-app-bar app color="black" height="80px">
       <h3 class="white--text">Lista de Compras</h3>
       <v-spacer></v-spacer>
       <v-form ref="form">
         <v-row class="px-5">
-          <v-col class="py-0" cols="4">
+          <v-col class="pt-5 pb-0" cols="4">
             <v-text-field
+              :rules="[v => !!v || 'obrigatório']"
               v-model="new_item.name"
               solo
               flat
-              hide-details
               dense
               label="Nome"
             ></v-text-field>
           </v-col>
-          <v-col class="py-0" cols="2">
+          <v-col class="pt-5 pb-0" cols="2">
             <v-text-field
+              :rules="[
+                v => !!v || 'obrigatório',
+                v =>
+                  (v && v.length > 0 && !v.includes(',')) ||
+                  'Não é permitido uso da vírgula'
+              ]"
               v-model="new_item.price"
               solo
               flat
-              hide-details
               dense
               label="Preço"
             ></v-text-field>
           </v-col>
-          <v-col class="py-0" cols="3">
+          <v-col class="pt-5 pb-0" cols="3">
             <v-text-field
+              :rules="[v => !!v || 'obrigatório']"
               v-model="new_item.qtd"
               solo
               flat
-              hide-details
               type="number"
               dense
               label="Quantidade"
             ></v-text-field>
           </v-col>
-          <v-col class="py-0" cols="3">
-            <v-btn @click="addItem" depressed color="success" block
-              >Salvar</v-btn
+          <v-col class="pb-0 pt-5" cols="3">
+            <v-btn
+              :class="new_item.id ? 'orange' : 'success'"
+              @click="addItem"
+              depressed
+              class="white--text"
+              block
             >
+              Salvar
+            </v-btn>
           </v-col>
         </v-row>
       </v-form>
@@ -100,9 +111,9 @@ export default {
   data: () => ({
     new_item: {
       id: null,
-      name: "Banana",
-      price: 2,
-      qtd: 1
+      name: null,
+      price: null,
+      qtd: null
     },
     itens: []
   }),
@@ -118,19 +129,21 @@ export default {
   methods: {
     toCurrency,
     addItem() {
-      if (this.new_item.id) {
-        const indexItem = this.itens.findIndex(
-          item => this.new_item.id === item.id
-        );
+      if (this.$refs.form.validate()) {
+        if (this.new_item.id) {
+          const indexItem = this.itens.findIndex(
+            item => this.new_item.id === item.id
+          );
 
-        this.itens[indexItem] = { ...this.new_item };
-      } else {
-        this.new_item.id = uuid();
-        this.itens = [{ ...this.new_item }, ...this.itens];
+          this.itens[indexItem] = { ...this.new_item };
+        } else {
+          this.new_item.id = uuid();
+          this.itens = [{ ...this.new_item }, ...this.itens];
+        }
+
+        this.$refs.form.reset();
+        this.new_item.id = null;
       }
-
-      this.$refs.form.reset();
-      this.new_item.id = null;
     },
     increase(index) {
       this.itens[index].qtd++;
