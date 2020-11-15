@@ -64,38 +64,18 @@
                 </v-btn>
               </v-col>
             </v-row>
-            <v-list-item v-for="(item, index) in itens" :key="index">
-              <v-list-item-subtitle
-                class="item-subtitle"
-                v-text="'Nome: ' + item.name"
-              ></v-list-item-subtitle>
-              <v-list-item-subtitle
-                class="item-subtitle"
-                v-text="'Valor: ' + toCurrency(item.price)"
-              ></v-list-item-subtitle>
-              <v-list-item-subtitle
-                class="item-subtitle"
-                v-text="'Quantidade: ' + item.qtd"
-              ></v-list-item-subtitle>
-              <v-list-item-subtitle class="item-subtitle">
-                Total do item:
-                {{ toCurrency(item.qtd * item.price) }}
-              </v-list-item-subtitle>
-              <v-list-item-action
-                class="mr-2"
-                v-for="(item, actionIndex) in actions"
-                :key="actionIndex"
-              >
-                <v-btn
-                  :color="item.color"
-                  @click="item.action(index)"
-                  small
-                  icon
-                >
-                  <v-icon>{{ item.icon }}</v-icon>
-                </v-btn>
-              </v-list-item-action>
-            </v-list-item>
+
+            <ListItem
+              v-for="(item, index) in itens"
+              :key="index"
+              @increase="increase"
+              @decrease="decrease"
+              @update="update"
+              @remove="remove"
+              :item="item"
+              :index="index"
+            />
+
             <v-divider></v-divider>
           </v-list>
           <div v-else style="margin-top: 20%;" class="text-center">
@@ -108,11 +88,14 @@
 </template>
 
 <script>
+import ListItem from "@/components/ListItem";
+import { toCurrency } from "./utils/index";
 import { v4 as uuid } from "uuid";
+
 export default {
   name: "App",
 
-  components: {},
+  components: { ListItem },
 
   data: () => ({
     new_item: {
@@ -124,30 +107,6 @@ export default {
     itens: []
   }),
   computed: {
-    actions() {
-      return [
-        {
-          icon: "mdi-plus-circle",
-          action: index => this.increase(index),
-          color: "success"
-        },
-        {
-          icon: "mdi-minus-circle",
-          action: index => this.decrease(index),
-          color: "secondary"
-        },
-        {
-          icon: "mdi-pencil-circle",
-          action: index => this.update(index),
-          color: "primary"
-        },
-        {
-          icon: "mdi-delete-circle",
-          action: index => this.remove(index),
-          color: "error"
-        }
-      ];
-    },
     total() {
       let total = 0;
       this.itens.forEach(item => {
@@ -157,12 +116,7 @@ export default {
     }
   },
   methods: {
-    toCurrency(value) {
-      return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-      }).format(value);
-    },
+    toCurrency,
     addItem() {
       if (this.new_item.id) {
         const indexItem = this.itens.findIndex(
